@@ -83,16 +83,34 @@ rbac_init_store(const char *name, char *err_msg)
 }
 
 static int
-create_tables()
+create_tables(char *err_msg)
 {
-    char *zErrMsg = 0;
-    int rc = sqlite3_exec(store, sql, 0, 0, &zErrMsg);
+    int rc = sqlite3_exec(store, CREATE_USERS_TABLE_SQL, 0, 0, &err_msg);
     if (rc != SQLITE_OK) {
-        fprintf(stderr, "SQL error: %s\n", zErrMsg);
-        sqlite3_free(zErrMsg);
-    } else {
-        fprintf(stdout, "Table created successfully\n");
+        return 1;
     }
+
+    int rc = sqlite3_exec(store, CREATE_ROLES_TABLE_SQL, 0, 0, &err_msg);
+    if (rc != SQLITE_OK) {
+        return 1;
+    }
+
+    int rc = sqlite3_exec(store, CREATE_PERMISSIONS_TABLE_SQL, 0, 0, &err_msg);
+    if (rc != SQLITE_OK) {
+        return 1;
+    }
+
+    int rc = sqlite3_exec(store, CREATE_ROLE_PERMISSIONS_TABLE_SQL, 0, 0,
+                          &err_msg);
+    if (rc != SQLITE_OK) {
+        return 1;
+    }
+
+    int rc = sqlite3_exec(store, CREATE_USER_ROLES_TABLE_SQL, 0, 0, &err_msg);
+    if (rc != SQLITE_OK) {
+        return 1;
+    }
+
     return 0;
 }
 
