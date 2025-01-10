@@ -33,20 +33,37 @@
 
 #include "rbac.h"
 
-#define CREATE_USERS_TABLE sql \
-      "CREATE TABLE USERS (" \
-      "id INT PRIMARY KEY AUTOINCREMENT NOT NULL," \
-      "name TEXT);";
+#define CREATE_USERS_TABLE_SQL \
+    "CREATE TABLE IF NOT EXISTS users (" \
+    "id INT PRIMARY KEY AUTOINCREMENT," \
+    "name TEXT" \
+    "password TEXT NOT NULL);"
 
-#define CREATE_ROLES_TABLE sql \
-      "CREATE TABLE ROLES (" \
-      "id INT PRIMARY KEY AUTOINCREMENT NOT NULL," \
-      "name TEXT);";
+#define CREATE_ROLES_TABLE_SQL \
+    "CREATE TABLE IF NOT EXISTS roles (" \
+    "id INT PRIMARY KEY AUTOINCREMENT," \
+    "name TEXT UNIQUE NOT NULL);"
 
-#define CREATE_PERMISSIONS_TABLE sql \
-      "CREATE TABLE ROLES (" \
-      "id INT PRIMARY KEY AUTOINCREMENT NOT NULL," \
-      "name TEXT);";
+#define CREATE_PERMISSIONS_TABLE_SQL \
+    "CREATE TABLE IF NOT EXISTS permissions (" \
+    "id INT PRIMARY KEY AUTOINCREMENT," \
+    "name TEXT UNIQUE NOT NULL);"
+
+#define CREATE_ROLE_PERMISSIONS_TABLE_SQL \
+    "CREATE TABLE IF NOT EXISTS role_permissions (" \
+    "role_id INTEGER NOT NULL," \
+    "permission_id INTEGER NOT NULL," \
+    "FOREIGN KEY (role_id) REFERENCES roles(id)," \
+    "FOREIGN KEY (permission_id) REFERENCES permissions(id)," \
+    "PRIMARY KEY (role_id, permission_id));"
+
+#define CREATE_USER_ROLES_TABLE_SQL \ 
+    "CREATE TABLE IF NOT EXISTS user_roles (" \
+    "user_id INTEGER NOT NULL," \
+    "role_id INTEGER NOT NULL," \
+    "FOREIGN KEY (user_id) REFERENCES users(id)," \
+    "FOREIGN KEY (role_id) REFERENCES roles(id)," \
+    "PRIMARY KEY (user_id, role_id));"
 
 static sqlite3 *store;
 
@@ -62,6 +79,20 @@ rbac_init_store(const char *name, char *err_msg)
         return 1;
     }
 
+    return 0;
+}
+
+static int
+create_tables()
+{
+    char *zErrMsg = 0;
+    int rc = sqlite3_exec(store, sql, 0, 0, &zErrMsg);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "SQL error: %s\n", zErrMsg);
+        sqlite3_free(zErrMsg);
+    } else {
+        fprintf(stdout, "Table created successfully\n");
+    }
     return 0;
 }
 
