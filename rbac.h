@@ -35,27 +35,36 @@ extern "C" {
 #include <stdlib.h>
 
 typedef struct permission {
-    const char *name;
+    char *name;
 } rbac_permission_t;
 
 typedef struct role {
-    const char *name;
-    const rbac_permission_t **permissions;
+    char *name;
+    rbac_permission_t **permissions;
 } rbac_role_t;
 
 typedef struct user {
-    const char *name;
-    const rbac_role_t **roles;
+    char *name;
+    rbac_role_t **roles;
 } rbac_user_t;
 
-rbac_role_t*
-rbac_new_role(const char *role);
+int
+rbac_init_store(const char *name, char *err_msg);
 
-void
-rbac_new_store(size_t size);
+int
+rbac_add_user(const char *name, char *err_msg);
 
+int
+rbac_add_role(const char *name, char *err_msg);
+
+int
+rbac_add_permission(const char *name, char *err_msg);
+
+/**
+ * Clean up used resources.
+ */
 void
-rbac_add_user(const char *user, const char *role);
+rbac_cleanup();
 
 #endif /** __RBAC_H */
 #ifdef __cplusplus

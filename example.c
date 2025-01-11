@@ -25,6 +25,7 @@
  * SUCH DAMAGE.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "rbac.h"
@@ -32,6 +33,15 @@
 int
 main(int argc, char **argv)
 {
-    
+    char *err_msg = {0};
+    int ret = rbac_init_store("rbac.db", err_msg);
+    if (ret != 0) {
+        fprintf(stderr, "%s\n", err_msg);
+        free(err_msg);
+        return 1;
+    }
+
+    rbac_cleanup();
+
     return 0;
 }

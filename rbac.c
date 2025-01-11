@@ -57,7 +57,7 @@
     "FOREIGN KEY (permission_id) REFERENCES permissions(id)," \
     "PRIMARY KEY (role_id, permission_id));"
 
-#define CREATE_USER_ROLES_TABLE_SQL \ 
+#define CREATE_USER_ROLES_TABLE_SQL \
     "CREATE TABLE IF NOT EXISTS user_roles (" \
     "user_id INTEGER NOT NULL," \
     "role_id INTEGER NOT NULL," \
@@ -66,6 +66,54 @@
     "PRIMARY KEY (user_id, role_id));"
 
 static sqlite3 *store;
+
+static int
+create_tables(char *err_msg)
+{
+    int rc = 0;
+    rc = sqlite3_exec(store, CREATE_USERS_TABLE_SQL, 0, 0, &err_msg);
+    if (rc != SQLITE_OK) {
+        const char *msg = sqlite3_errmsg(store);
+        err_msg = calloc(strlen(msg)+1, sizeof(char));
+        strcpy(err_msg, msg);
+        return 1;
+    }
+
+    rc = sqlite3_exec(store, CREATE_ROLES_TABLE_SQL, 0, 0, &err_msg);
+    if (rc != SQLITE_OK) {
+        const char *msg = sqlite3_errmsg(store);
+        err_msg = calloc(strlen(msg)+1, sizeof(char));
+        strcpy(err_msg, msg);
+        return 1;
+    }
+
+    rc = sqlite3_exec(store, CREATE_PERMISSIONS_TABLE_SQL, 0, 0, &err_msg);
+    if (rc != SQLITE_OK) {
+        const char *msg = sqlite3_errmsg(store);
+        err_msg = calloc(strlen(msg)+1, sizeof(char));
+        strcpy(err_msg, msg);
+        return 1;
+    }
+
+    rc = sqlite3_exec(store, CREATE_ROLE_PERMISSIONS_TABLE_SQL, 0, 0,
+                          &err_msg);
+    if (rc != SQLITE_OK) {
+        const char *msg = sqlite3_errmsg(store);
+        err_msg = calloc(strlen(msg)+1, sizeof(char));
+        strcpy(err_msg, msg);
+        return 1;
+    }
+
+    rc = sqlite3_exec(store, CREATE_USER_ROLES_TABLE_SQL, 0, 0, &err_msg);
+    if (rc != SQLITE_OK) {
+        const char *msg = sqlite3_errmsg(store);
+        err_msg = calloc(strlen(msg)+1, sizeof(char));
+        strcpy(err_msg, msg);
+        return 1;
+    }
+
+    return 0;
+}
 
 int
 rbac_init_store(const char *name, char *err_msg)
@@ -79,43 +127,11 @@ rbac_init_store(const char *name, char *err_msg)
         return 1;
     }
 
-    return 0;
-}
-
-static int
-create_tables(char *err_msg)
-{
-    int rc = sqlite3_exec(store, CREATE_USERS_TABLE_SQL, 0, 0, &err_msg);
-    if (rc != SQLITE_OK) {
-        return 1;
-    }
-
-    int rc = sqlite3_exec(store, CREATE_ROLES_TABLE_SQL, 0, 0, &err_msg);
-    if (rc != SQLITE_OK) {
-        return 1;
-    }
-
-    int rc = sqlite3_exec(store, CREATE_PERMISSIONS_TABLE_SQL, 0, 0, &err_msg);
-    if (rc != SQLITE_OK) {
-        return 1;
-    }
-
-    int rc = sqlite3_exec(store, CREATE_ROLE_PERMISSIONS_TABLE_SQL, 0, 0,
-                          &err_msg);
-    if (rc != SQLITE_OK) {
-        return 1;
-    }
-
-    int rc = sqlite3_exec(store, CREATE_USER_ROLES_TABLE_SQL, 0, 0, &err_msg);
-    if (rc != SQLITE_OK) {
-        return 1;
-    }
-
-    return 0;
+    return create_tables(err_msg);
 }
 
 void
-rbac_stop()
+rbac_cleanup()
 {
     sqlite3_close(store);
 }
@@ -132,16 +148,57 @@ rbac_role_free(rbac_role_t* role)
     }
 }
 
-rbac_role_t*
-rbac_new_role(const char *name)
+int
+rbac_add_user(const char *name, char *err_msg)
 {
     if (name == NULL || name[0] == '\0') {
-        return NULL;
+        return 1;
+    }
+    const char *query = "INSERT INTO users (name) VALUES ('bdowns')";
+    int rc = sqlite3_exec(store, query, 0, 0, &err_msg);
+    if (rc != SQLITE_OK) {
+        const char *msg = sqlite3_errmsg(store);
+        err_msg = calloc(strlen(msg)+1, sizeof(char));
+        strcpy(err_msg, msg);
+        return 1;
     }
 
-    rbac_role_t *role = calloc(1, sizeof(rbac_role_t));
-    role->name = calloc(strlen(name)+1, sizeof(char));
-    strcpy(role->name, name);
-
-    return role;
+    return 0;
 }
+
+int
+rbac_add_role(const char *name, char *err_msg)
+{
+    if (name == NULL || name[0] == '\0') {
+        return 1;
+    }
+    const char *query = "INSERT INTO roles (name) VALUES ('admin')";
+    int rc = sqlite3_exec(store, query, 0, 0, &err_msg);
+    if (rc != SQLITE_OK) {
+        const char *msg = sqlite3_errmsg(store);
+        err_msg = calloc(strlen(msg)+1, sizeof(char));
+        strcpy(err_msg, msg);
+        return 1;
+    }
+
+    return 0;
+}
+
+int
+rbac_add_permission(const char *name, char *err_msg)
+{
+    if (name == NULL || name[0] == '\0') {
+        return 1;
+    }
+    const char *query = "INSERT INTO permissions (name) VALUES ('admin')";
+    int rc = sqlite3_exec(store, query, 0, 0, &err_msg);
+    if (rc != SQLITE_OK) {
+        const char *msg = sqlite3_errmsg(store);
+        err_msg = calloc(strlen(msg)+1, sizeof(char));
+        strcpy(err_msg, msg);
+        return 1;
+    }
+
+    return 0;
+}
+
