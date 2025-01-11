@@ -190,7 +190,33 @@ rbac_add_permission(const char *name, char *err_msg)
     if (name == NULL || name[0] == '\0') {
         return 1;
     }
-    const char *query = "INSERT INTO permissions (name) VALUES ('admin')";
+
+    size_t query_len = strlen(name)+42;
+    char *query = calloc(query_len, sizeof(char));
+    sprintf(query, "INSERT INTO permissions (name) VALUES ('%s')", name);
+
+    int rc = sqlite3_exec(store, query, 0, 0, &err_msg);
+    if (rc != SQLITE_OK) {
+        const char *msg = sqlite3_errmsg(store);
+        err_msg = calloc(strlen(msg)+1, sizeof(char));
+        strcpy(err_msg, msg);
+        return 1;
+    }
+
+    return 0;
+}
+
+int
+rbac_add_permission2(const char *name, char *err_msg)
+{
+    if (name == NULL || name[0] == '\0') {
+        return 1;
+    }
+
+    size_t query_len = strlen(name)+42;
+    char *query = calloc(query_len, sizeof(char));
+    sprintf(query, "INSERT INTO permissions (name) VALUES ('%s')", name);
+
     int rc = sqlite3_exec(store, query, 0, 0, &err_msg);
     if (rc != SQLITE_OK) {
         const char *msg = sqlite3_errmsg(store);
