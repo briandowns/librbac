@@ -30,6 +30,73 @@
 
 #include "rbac.h"
 
+static const char *roles[3] = {
+    "user",
+    "admin"
+};
+
+static const char *users[5] = {
+    "bdowns",
+    "jmoore",
+    "jdowns",
+    "mdowns",
+    "dlafrance"
+};
+
+static const char *permissions[3] = {
+    "read",
+    "write",
+    "exec"
+};
+
+int
+seed_roles()
+{
+    char *err_msg = {0};
+    for (int i = 0; i < 3; i++) {
+        int ret = rbac_add_role(roles[i], err_msg);
+        if (ret != 0) {
+            fprintf(stderr, "%s\n", err_msg);
+            free(err_msg);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+int
+seed_users()
+{
+    char *err_msg = {0};
+    for (int i = 0; i < 3; i++) {
+        int ret = rbac_add_user(users[i], err_msg);
+        if (ret != 0) {
+            fprintf(stderr, "%s\n", err_msg);
+            free(err_msg);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+int
+seed_permissions()
+{
+    char *err_msg = {0};
+    for (int i = 0; i < 3; i++) {
+        int ret = rbac_add_permission(permissions[i], err_msg);
+        if (ret != 0) {
+            fprintf(stderr, "%s\n", err_msg);
+            free(err_msg);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -40,6 +107,19 @@ main(int argc, char **argv)
         free(err_msg);
         return 1;
     }
+
+    if (seed_roles() != 0) {
+        return 1;
+    }
+
+    if (seed_users() != 0) {
+        return 1;
+    }
+
+    if (seed_permissions() != 0) {
+        return 1;
+    }
+
 
     rbac_cleanup();
 
