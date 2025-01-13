@@ -98,6 +98,34 @@ seed_permissions()
 }
 
 int
+seed_role_permissions()
+{
+    char *err_msg = {0};
+    int ret = rbac_add_permission_to_role("admin", "read", err_msg);
+    if (ret != 0) {
+        fprintf(stderr, "%s\n", err_msg);
+        free(err_msg);
+        return 1;
+    }
+
+    int ret = rbac_add_permission_to_role("admin", "write", err_msg);
+    if (ret != 0) {
+        fprintf(stderr, "%s\n", err_msg);
+        free(err_msg);
+        return 1;
+    }
+
+    int ret = rbac_add_permission_to_role("admin", "exec", err_msg);
+    if (ret != 0) {
+        fprintf(stderr, "%s\n", err_msg);
+        free(err_msg);
+        return 1;
+    }
+
+    return 0;
+}
+
+int
 main(int argc, char **argv)
 {
     char *err_msg = {0};
@@ -120,6 +148,9 @@ main(int argc, char **argv)
         return 1;
     }
 
+    if (seed_role_permissions() != 0) {
+        return 1;
+    }
 
     rbac_cleanup();
 
