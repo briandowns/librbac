@@ -30,7 +30,7 @@
 
 #include "rbac.h"
 
-static const char *roles[3] = {
+static const char *roles[2] = {
     "user",
     "admin"
 };
@@ -53,8 +53,10 @@ int
 seed_roles()
 {
     char *err_msg = {0};
-    for (int i = 0; i < 3; i++) {
-        int ret = rbac_add_role(roles[i], err_msg);
+    int ret = 0;
+
+    for (int i = 0; i < 2; i++) {
+        ret = rbac_add_role(roles[i], err_msg);
         if (ret != 0) {
             fprintf(stderr, "%s\n", err_msg);
             free(err_msg);
@@ -69,10 +71,12 @@ int
 seed_users()
 {
     char *err_msg = {0};
-    for (int i = 0; i < 3; i++) {
-        int ret = rbac_add_user(users[i], err_msg);
+    int ret = 0;
+
+    for (int i = 0; i < 5; i++) {
+        ret = rbac_add_user(users[i], err_msg);
         if (ret != 0) {
-            fprintf(stderr, "%s\n", err_msg);
+            fprintf(stderr, "XXX - %s\n", err_msg);
             free(err_msg);
             return 1;
         }
@@ -85,10 +89,12 @@ int
 seed_permissions()
 {
     char *err_msg = {0};
+    int ret = 0;
+
     for (int i = 0; i < 3; i++) {
-        int ret = rbac_add_permission(permissions[i], err_msg);
+        ret = rbac_add_permission(permissions[i], err_msg);
         if (ret != 0) {
-            fprintf(stderr, "%s\n", err_msg);
+            fprintf(stderr, "XXX - %s\n", err_msg);
             free(err_msg);
             return 1;
         }
@@ -103,21 +109,21 @@ seed_role_permissions()
     char *err_msg = {0};
     int ret = rbac_add_permission_to_role("admin", "read", err_msg);
     if (ret != 0) {
-        fprintf(stderr, "%s\n", err_msg);
+        fprintf(stderr, "XXX - %s\n", err_msg);
         free(err_msg);
         return 1;
     }
 
-    int ret = rbac_add_permission_to_role("admin", "write", err_msg);
+    ret = rbac_add_permission_to_role("admin", "write", err_msg);
     if (ret != 0) {
-        fprintf(stderr, "%s\n", err_msg);
+        fprintf(stderr, "XXX - %s\n", err_msg);
         free(err_msg);
         return 1;
     }
 
-    int ret = rbac_add_permission_to_role("admin", "exec", err_msg);
+    ret = rbac_add_permission_to_role("admin", "exec", err_msg);
     if (ret != 0) {
-        fprintf(stderr, "%s\n", err_msg);
+        fprintf(stderr, "XXX - %s\n", err_msg);
         free(err_msg);
         return 1;
     }
@@ -131,7 +137,7 @@ main(int argc, char **argv)
     char *err_msg = {0};
     int ret = rbac_init_store("rbac.db", err_msg);
     if (ret != 0) {
-        fprintf(stderr, "%s\n", err_msg);
+        fprintf(stderr, "XXX - %s\n", err_msg);
         free(err_msg);
         return 1;
     }
@@ -152,6 +158,10 @@ main(int argc, char **argv)
         return 1;
     }
 
+    if (rbac_user_has_permission("admin", "write", err_msg)) {
+        printf("has permission\n");
+    }
+    
     rbac_cleanup();
 
     return 0;

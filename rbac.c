@@ -122,7 +122,7 @@ rbac_init_store(const char *name, char *err_msg)
         sqlite3_close(store);
         return 1;
     }
-
+    
     return create_tables(err_msg);
 }
 
@@ -139,7 +139,10 @@ rbac_add_user(const char *name, char *err_msg)
     if (name == NULL || name[0] == '\0') {
         return 1;
     }
-    const char *query = "INSERT INTO users (name) VALUES ('bdowns')";
+
+    size_t query_len = strlen(name)+37;
+    char *query = calloc(query_len, sizeof(char));
+    sprintf("INSERT INTO users (name) VALUES (\'%s\')", name);
     int rc = sqlite3_exec(store, query, 0, 0, &err_msg);
     PROCESS_ERROR;
 
@@ -153,10 +156,9 @@ rbac_add_role(const char *name, char *err_msg)
         return 1;
     }
 
-    size_t query_len = strlen(name)+35;
+    size_t query_len = strlen(name)+37;
     char *query = calloc(query_len, sizeof(char));
     sprintf(query, "INSERT INTO roles (name) VALUES (\'%s\')", name);
-
     int rc = sqlite3_exec(store, query, 0, 0, &err_msg);
     PROCESS_ERROR;
 
@@ -238,7 +240,7 @@ rbac_user_has_permission(const char *user, const char *perm, char *err_msg)
     sqlite3_prepare_v2(store, query, -1, &stmt, NULL);
 
     sprintf(query, USER_HAS_PERMISSION_QUERY, user, perm);
-
+    printf("%s\n", query);
     // int rc = sqlite3_exec(store, query, NULL, NULL, &err_msg);
     // PROCESS_ERROR;
 
@@ -248,19 +250,18 @@ rbac_user_has_permission(const char *user, const char *perm, char *err_msg)
 		for (int i = 0; i < num_cols; i++) {
 			switch (sqlite3_column_type(stmt, i)) {
 			case (SQLITE3_TEXT):
-				printf("%s, ", sqlite3_column_text(stmt, i));
+				printf("XXX - %s\n, ", sqlite3_column_text(stmt, i));
 				break;
 			case (SQLITE_INTEGER):
-				printf("%d, ", sqlite3_column_int(stmt, i));
+				printf("XXX - %d\n, ", sqlite3_column_int(stmt, i));
 				break;
 			case (SQLITE_FLOAT):
-				printf("%g, ", sqlite3_column_double(stmt, i));
+				printf("XXX - %g\n, ", sqlite3_column_double(stmt, i));
 				break;
 			default:
 				break;
 			}
 		}
-		printf("\n");
 
 	}
 
